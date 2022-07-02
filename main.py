@@ -1,14 +1,25 @@
+import math
 import pygame
 
+width = 1000
+height = 1000
+hheight = height/2
+step = 10
+xStep = step
+yStep = step
 
-def field_func(x, y, input) -> int:
+def field_func(x, y, count, scale) -> int:
     # if the return is 1 the coords are "inside"
     # if the return is 0 the coords are "outside"
-    
+
     # this is just some silly function
-    i = round(1+input)/10
-    if x % i == 0 or y % i == 0:
-        return 1
+
+    # x = angle
+    alpha = (x*(count/100)) % 360
+
+    sinY = scale*4*math.sin(math.radians(alpha))+hheight
+
+    if abs(y-sinY) < 25: return 1
 
     return 0
 
@@ -25,7 +36,7 @@ class MCube2D:
         self.xStep = xStep
         self.yStep = yStep
 
-    def draw(self, screen, input) -> None:
+    def draw(self, screen, count, scale) -> None:
         x = self.x
         y = self.y
         xh = x+self.xStep/2
@@ -33,10 +44,10 @@ class MCube2D:
         xf = x+self.xStep
         yf = y+self.yStep
 
-        x0y0 = field_func(x, y, input)
-        x1y0 = field_func(xf, y, input)
-        x1y1 = field_func(xf, yf, input)
-        x0y1 = field_func(x, yf, input)
+        x0y0 = field_func(x, y, count, scale)
+        x1y0 = field_func(xf, y, count, scale)
+        x1y1 = field_func(xf, yf, count, scale)
+        x0y1 = field_func(x, yf, count, scale)
 
         case = x0y0 * 1
         case += x1y0 * 2
@@ -120,11 +131,6 @@ class MCube2D:
                 screen, color, [(x, y), (xf, y), (xf, yf), (x, yf)])
 
 
-width = 800
-height = 500
-xStep = 10
-yStep = 10
-
 cubes = []
 # initiate all cubes
 for x in range(0, width, xStep):
@@ -138,6 +144,7 @@ pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode([width, height])
 
+count = 0
 running = True
 while running:
     for event in pygame.event.get():
@@ -146,16 +153,15 @@ while running:
 
     clock.tick()
     fps = clock.get_fps()
-    # print fps
-    print(fps)
 
+    count += 1
     # Fill the background
     screen.fill(bg_color)
 
     # draw all cubes
     for cube in cubes:
         # pass in some "random" value
-        cube.draw(screen, fps)
+        cube.draw(screen, count, fps)
 
     # Flip the display
     pygame.display.flip()
